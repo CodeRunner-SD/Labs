@@ -1,0 +1,108 @@
+name: CI-CD
+
+on: [push, pull_request]
+
+jobs:
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macOS-latest]
+        config: [Debug, Release]
+    runs-on: ${{ matrix.os }}
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v1
+    - name: Setup dotnet
+      if: matrix.os != 'windows-latest'
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: '3.0.100'
+    - name: Setup python
+      uses: actions/setup-python@v1
+      with:
+        python-version: '3.x'
+        architecture: 'x64'
+    - name: Restore
+      run: dotnet restore -s https://www.myget.org/F/stardustdl/api/v3/index.json -s https://api.nuget.org/v3/index.json
+      shell: pwsh
+    - name: Build
+      env:
+        CONFIG: ${{ matrix.config }}
+      run: dotnet build -c $env:CONFIG
+      shell: pwsh
+    - name: Test
+      env:
+        CONFIG: ${{ matrix.config }}
+      run: dotnet test -c $env:CONFIG /p:CollectCoverage=true /p:CoverletOutput=../../coverage.json /p:MergeWith=../../coverage.json /maxcpucount:1
+      shell: pwsh
+    - name: Generate report
+      env:
+        CONFIG: ${{ matrix.config }}
+      run: |
+        mkdir reports
+        dotnet test -c $env:CONFIG ./test/Test.Base /p:CollectCoverage=true /p:CoverletOutputFormat=opencover /p:CoverletOutput=../../reports/coverage.xml /p:MergeWith=../../coverage.json /maxcpucount:1
+      shell: pwsh
+    - name: Upload reports
+      uses: actions/upload-artifact@master
+      with:
+        name: reports-${{ matrix.os }}-${{ matrix.config }}
+        path: ./reports
+    - name: Generate artifacts
+      env:
+        CONFIG: ${{ matrix.config }}
+      run: |
+        mkdir artifacts
+        dotnet publish -c $env:CONFIG -o ./artifacts
+      shell: pwsh
+    - name: Upload artifacts
+      uses: actions/upload-artifact@master
+      with:
+        name: published-${{ matrix.os }}-${{ matrix.config }}
+        path: ./artifacts
+  deploy:
+    needs: test
+    strategy:
+      fail-fast: true
+      matrix:
+        os: [ubuntu-latest]
+        config: [Release]
+        versionSuffix: [pre]
+    runs-on: ${{ matrix.os }}
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v1
+    - name: Setup dotnet
+      if: matrix.os != 'windows-latest'
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: '3.0.100'
+    - name: Restore
+      run: dotnet restore -s https://www.myget.org/F/stardustdl/api/v3/index.json -s https://api.nuget.org/v3/index.json
+      shell: pwsh
+    - name: Build
+      env:
+        CONFIG: ${{ matrix.config }}
+      run: dotnet build -c $env:CONFIG
+      shell: pwsh
+    - name: Generate artifacts
+      env:
+        CONFIG: ${{ matrix.config }}
+        SUFFIX: ${{ matrix.versionSuffix }}
+      run: |
+        mkdir artifacts
+        dotnet pack -c $env:CONFIG --version-suffix $env:SUFFIX -o ./packages
+      shell: pwsh
+    - name: Upload artifacts
+      uses: actions/upload-artifact@master
+      with:
+        name: packages
+        path: ./packages
+    - name: Deploy
+      if: github.event_name == 'push'
+      env:
+        MYGET_TOKEN: ${{ secrets.MYGET_TOKEN }}
+        SUFFIX: ${{ matrix.versionSuffix }}
+      run: |
+        dotnet nuget push ./packages/CodeRunner.Test.0.0.1-$env:SUFFIX.nupkg -k $env:MYGET_TOKEN -s https://www.myget.org/F/stardustdl/api/v2/package
+      shell: pwsh
