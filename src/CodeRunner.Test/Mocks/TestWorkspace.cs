@@ -48,26 +48,26 @@ namespace CodeRunner.Test.Mocks
 
         public virtual async Task Clear()
         {
-            LogScope.Information("Invoke");
+            LogScope.Invoked();
             if (OnClear != null)
                 await OnClear();
         }
 
         public virtual async Task<IWorkItem?> Create(string name, ITemplate? from, Func<VariableCollection, ResolveContext, Task> resolveCallback)
         {
-            LogScope.Information("Invoke");
+            LogScope.Invoked();
             return OnCreate != null ? await OnCreate(name, from, resolveCallback) : null;
         }
 
         public virtual async Task<PipelineResult<Wrapper<bool>>> Execute(IWorkItem? workItem, IOperation from, Func<VariableCollection, ResolveContext, Task> resolveCallback, OperationWatcher watcher, ILogger logger)
         {
-            LogScope.Information("Invoke");
+            LogScope.Invoked();
             return OnExecute != null ? await OnExecute(workItem, from, resolveCallback, watcher, logger) : new PipelineResult<Wrapper<bool>>(false, null, Array.Empty<LogItem>());
         }
 
         public virtual async Task Initialize()
         {
-            LogScope.Information("Invoke");
+            LogScope.Invoked();
             if (OnInitialize != null)
                 await OnInitialize();
         }

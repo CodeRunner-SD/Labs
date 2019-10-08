@@ -9,10 +9,10 @@ namespace CodeRunner.Test.Mocks
 
         private LoggerScope Scope { get; }
 
-        public virtual void Restart() => Scope.Information("Restart request");
+        public virtual void Restart() => Scope.Invoked("Restart request");
 
-        public virtual void SendMessage(string message) => Scope.Information("Recieved message: " + message);
+        public virtual void SendMessage(string message) => Scope.Invoked("Recieved message: " + message);
 
-        public virtual void Shutdown() => Scope.Information("Shutdown request");
+        public virtual void Shutdown() => Scope.Invoked("Shutdown request");
     }
 }

@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <VersionPrefix>0.0.1</VersionPrefix>
+    <Authors>StardustDL</Authors>
+    <Product>CodeRunner.Extensions.FileStatistics</Product>
+    <Copyright>Copyright (c) StardustDL. All rights reserved.</Copyright>
+    <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
+    <PackageProjectUrl>https://github.com/CodeRunner-SD/CodeRunner.Extensions</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/CodeRunner-SD/CodeRunner.Extensions</RepositoryUrl>
+    <RepositoryType>Git</RepositoryType>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
+    <Description>The file statistics extension of CodeRunner.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="CodeRunner.Extensions.Core" Version="0.0.1-pre4">
+      <ExcludeAssets>runtime</ExcludeAssets>
+    </PackageReference>
+    <PackageReference Include="CodeRunner.Extensions.Helpers" Version="0.0.1-pre4" />
+  </ItemGroup>
+
+</Project>

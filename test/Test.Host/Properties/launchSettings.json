@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "Test.Host": {
+      "commandName": "Project",
+      "commandLineArgs": "-d \"./temp\" --verbose"
+    }
+  }
+}
